@@ -35,6 +35,7 @@ def lambda_handler(event, context):
     tmp = tempfile.NamedTemporaryFile(mode='r+b')
     with open(tmp.name, 'r+b') as f:
         img_obj.download_file(tmp.name)
-        api.update_with_media(status="#otters", filename=tmp.name)
+        print(tmp.name)
+        api.update_with_media(filename=tmp.name)
 
     print("Sent tweet!")
