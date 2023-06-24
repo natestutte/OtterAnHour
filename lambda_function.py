@@ -14,13 +14,13 @@ def lambda_handler(event, context):
     s3_client = boto3.client('s3')
     s3_resource = boto3.resource('s3')
 
-    auth = tp.OAuthHandler(os.environ['api_key'], os.environ['api_secret'])
+    auth = tp.OAuthHandler(consumer_key=os.environ['api_key'], consumer_secret=os.environ['api_secret'])
     auth.set_access_token(os.environ['access_token'], os.environ['access_secret'])
+    # auth = tp.OAuthHandler(os.environ['client_ID'], os.environ['client_secret'])
 
     api = tp.API(auth)
-
-    api.verify_credentials()
-    print("Verified Credentials!")
+    
+    client = tp.Client(consumer_key=os.environ['api_key'], consumer_secret=os.environ['api_secret'], access_token=os.environ['access_token'], access_token_secret=os.environ['access_secret'])
 
     # Load JSON file of used filenames
     content_object = s3_resource.Object("otterpics", "used.json")
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
     tmp = tempfile.NamedTemporaryFile(mode='r+b')
     with open(tmp.name, 'r+b') as f:
         img_obj.download_file(tmp.name)
-        print(tmp.name)
-        api.update_with_media(filename=tmp.name)
-
+        media = api.media_upload(filename=tmp.name)
+        client.create_tweet(media_ids=[media.media_id])
+        
     print("Sent tweet!")
